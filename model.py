@@ -8,7 +8,6 @@ from torch_geometric.nn import (
     global_mean_pool
 )
 
-
 # ==========================================================
 # GNN BLOCK
 # ==========================================================
@@ -83,7 +82,7 @@ class Model(nn.Module):
             dropout=dropout
         )
 
-        # Descriptor network
+        # Descriptor Network
         self.desc_net = nn.Sequential(
 
             nn.Linear(
@@ -103,7 +102,7 @@ class Model(nn.Module):
             nn.ReLU()
         )
 
-        # Final prediction network
+        # Final Regression Head
         self.fc = nn.Sequential(
 
             nn.Linear(
@@ -137,10 +136,10 @@ class Model(nn.Module):
         # Interaction
         graph_features = g1_emb * g2_emb
 
-        # Descriptor embedding
+        # Descriptor branch
         desc_features = self.desc_net(d)
 
-        # Concatenate
+        # Merge
         x = torch.cat(
             [
                 graph_features,
