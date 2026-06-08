@@ -8,24 +8,25 @@ from torch_geometric.nn import (
     global_mean_pool
 )
 
-# ==========================================================
-# GNN BLOCK
-# ==========================================================
+
+# =====================================================
+# GNN
+# =====================================================
+
 class GNN(nn.Module):
 
     def __init__(
         self,
-        hidden_dim,
-        heads,
-        dropout
+        hidden_dim=128,
+        heads=2,
+        dropout=0.1288290982877934
     ):
         super().__init__()
 
         self.gat1 = GATConv(
             in_channels=9,
             out_channels=hidden_dim,
-            heads=heads,
-            dropout=dropout
+            heads=heads
         )
 
         self.sage1 = SAGEConv(
@@ -37,42 +38,36 @@ class GNN(nn.Module):
 
     def forward(self, data):
 
-        x = self.gat1(
-            data.x,
-            data.edge_index
-        )
+        x = data.x
+        edge_index = data.edge_index
+        batch = data.batch
 
+        x = self.gat1(x, edge_index)
         x = F.relu(x)
 
         x = self.dropout(x)
 
-        x = self.sage1(
-            x,
-            data.edge_index
-        )
-
+        x = self.sage1(x, edge_index)
         x = F.relu(x)
 
-        x = global_mean_pool(
-            x,
-            data.batch
-        )
+        x = global_mean_pool(x, batch)
 
         return x
 
 
-# ==========================================================
+# =====================================================
 # FULL MODEL
-# ==========================================================
+# =====================================================
+
 class Model(nn.Module):
 
     def __init__(
         self,
-        desc_dim,
-        hidden_dim,
-        heads,
-        dropout,
-        desc_hidden
+        desc_dim=155,
+        hidden_dim=128,
+        heads=2,
+        dropout=0.1288290982877934,
+        desc_hidden=256
     ):
         super().__init__()
 
@@ -84,71 +79,43 @@ class Model(nn.Module):
 
         # Descriptor Network
         self.desc_net = nn.Sequential(
-
-            nn.Linear(
-                desc_dim,
-                desc_hidden
-            ),
-
+            nn.Linear(desc_dim, desc_hidden),
             nn.ReLU(),
-
             nn.Dropout(dropout),
 
-            nn.Linear(
-                desc_hidden,
-                64
-            ),
-
+            nn.Linear(desc_hidden, 64),
             nn.ReLU()
         )
 
-        # Final Regression Head
+        # Final Network
         self.fc = nn.Sequential(
-
-            nn.Linear(
-                hidden_dim + 64,
-                128
-            ),
-
+            nn.Linear(192, 128),
             nn.ReLU(),
-
             nn.Dropout(dropout),
 
-            nn.Linear(
-                128,
-                1
-            )
+            nn.Linear(128, 1)
         )
 
     def forward(
         self,
         g1,
         g2,
-        d
+        desc
     ):
 
-        # Solute graph embedding
-        g1_emb = self.gnn(g1)
+        h1 = self.gnn(g1)
+        h2 = self.gnn(g2)
 
-        # Solvent graph embedding
-        g2_emb = self.gnn(g2)
+        # interaction embedding
+        graph_emb = h1 * h2
 
-        # Interaction
-        graph_features = g1_emb * g2_emb
+        desc_emb = self.desc_net(desc)
 
-        # Descriptor branch
-        desc_features = self.desc_net(d)
-
-        # Merge
         x = torch.cat(
-            [
-                graph_features,
-                desc_features
-            ],
+            [graph_emb, desc_emb],
             dim=1
         )
 
-        # Prediction
         out = self.fc(x)
 
-        return out.squeeze()
+        return out.squeeze(-1)
