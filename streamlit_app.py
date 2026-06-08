@@ -20,14 +20,8 @@ st.set_page_config(
     layout="wide"
 )
 
-st.title("🧪 GNN Solubility Predictor")
+st.title("🧪 Solubility Predictor")
 
-st.markdown(
-    """
-Predict Solvation Free Energy (ΔG)
-using a Graph Neural Network + RDKit descriptors.
-"""
-)
 
 # =====================================================
 # LOAD MODEL
