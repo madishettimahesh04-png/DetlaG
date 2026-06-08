@@ -1,8 +1,8 @@
 streamlit
 torch
 torch-geometric
-pandas
+rdkit
 numpy
+pandas
 scikit-learn
 joblib
-rdkit
