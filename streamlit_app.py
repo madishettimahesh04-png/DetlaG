@@ -22,7 +22,7 @@ st.set_page_config(
 
 st.title("🧪 Solvation Free Energy Predictor")
 st.markdown(
-    "Predict solvation free energy (ΔG) using a Hybrid GAT + GraphSAGE + Descriptor Model"
+    "Predict solvation free energy (ΔG) using a Hybrid Model"
 )
 
 # =====================================================
@@ -187,20 +187,10 @@ with tab1:
 
 with tab2:
 
-    st.subheader("Upload CSV or Excel File")
-
-    st.info(
-        """
-        Required columns:
-
-        • Solute_SMILES
-
-        • Solvent_SMILES
-        """
-    )
+    st.subheader("📂 Batch Prediction")
 
     uploaded_file = st.file_uploader(
-        "Choose CSV or Excel file",
+        "Upload CSV or Excel File",
         type=["csv", "xlsx"]
     )
 
@@ -208,21 +198,18 @@ with tab2:
 
         try:
 
-            # -------------------------
+            # ---------------------------------
             # Read File
-            # -------------------------
+            # ---------------------------------
 
             if uploaded_file.name.endswith(".csv"):
-
-                df = pd.read_csv(
-                    uploaded_file
-                )
-
+                df = pd.read_csv(uploaded_file)
             else:
+                df = pd.read_excel(uploaded_file)
 
-                df = pd.read_excel(
-                    uploaded_file
-                )
+            st.success(
+                f"File Loaded Successfully ({len(df)} rows)"
+            )
 
             st.subheader("Preview")
 
@@ -231,62 +218,98 @@ with tab2:
                 use_container_width=True
             )
 
-            # -------------------------
-            # Predict Button
-            # -------------------------
+            # ---------------------------------
+            # Auto Detect Columns
+            # ---------------------------------
+
+            columns = list(df.columns)
+
+            solute_guess = columns[0]
+            solvent_guess = columns[min(1, len(columns)-1)]
+
+            for col in columns:
+
+                col_lower = col.lower()
+
+                if (
+                    "solute" in col_lower or
+                    "compound" in col_lower or
+                    "molecule" in col_lower
+                ):
+                    solute_guess = col
+
+                if (
+                    "solvent" in col_lower or
+                    "medium" in col_lower
+                ):
+                    solvent_guess = col
+
+            st.subheader("Column Mapping")
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+
+                solute_col = st.selectbox(
+                    "Select Solute SMILES Column",
+                    columns,
+                    index=columns.index(solute_guess)
+                )
+
+            with col2:
+
+                solvent_col = st.selectbox(
+                    "Select Solvent SMILES Column",
+                    columns,
+                    index=columns.index(solvent_guess)
+                )
+
+            st.info(
+                f"Using '{solute_col}' as Solute and "
+                f"'{solvent_col}' as Solvent"
+            )
+
+            # ---------------------------------
+            # Prediction
+            # ---------------------------------
 
             if st.button(
-                "Run Batch Prediction"
+                "🚀 Run Batch Prediction",
+                use_container_width=True
             ):
-
-                if (
-                    "Solute_SMILES"
-                    not in df.columns
-                ):
-
-                    st.error(
-                        "Column 'Solute_SMILES' not found"
-                    )
-
-                    st.stop()
-
-                if (
-                    "Solvent_SMILES"
-                    not in df.columns
-                ):
-
-                    st.error(
-                        "Column 'Solvent_SMILES' not found"
-                    )
-
-                    st.stop()
 
                 results = []
 
                 progress_bar = st.progress(0)
 
+                status = st.empty()
+
                 total_rows = len(df)
 
                 for idx, row in df.iterrows():
 
+                    status.info(
+                        f"Processing row {idx+1} of {total_rows}"
+                    )
+
                     try:
 
+                        solute = str(
+                            row[solute_col]
+                        ).strip()
+
+                        solvent = str(
+                            row[solvent_col]
+                        ).strip()
+
                         pred = predict_delta_g(
-                            str(
-                                row[
-                                    "Solute_SMILES"
-                                ]
-                            ),
-                            str(
-                                row[
-                                    "Solvent_SMILES"
-                                ]
-                            )
+                            solute,
+                            solvent
                         )
 
                         results.append(pred)
 
-                    except:
+                    except Exception:
 
                         results.append(None)
 
@@ -294,11 +317,11 @@ with tab2:
                         (idx + 1) / total_rows
                     )
 
-                df["Predicted_DeltaG"] = results
-
-                st.success(
-                    "Batch Prediction Complete"
+                status.success(
+                    "Prediction Complete"
                 )
+
+                df["Predicted_DeltaG"] = results
 
                 st.subheader(
                     "Prediction Results"
@@ -311,15 +334,14 @@ with tab2:
 
                 csv = df.to_csv(
                     index=False
-                ).encode(
-                    "utf-8"
-                )
+                ).encode("utf-8")
 
                 st.download_button(
                     label="⬇ Download Results",
                     data=csv,
                     file_name="predictions.csv",
-                    mime="text/csv"
+                    mime="text/csv",
+                    use_container_width=True
                 )
 
         except Exception as e:
