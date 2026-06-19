@@ -358,3 +358,92 @@ with tab2:
             st.error(
                 f"Error: {str(e)}"
             )
+
+st.markdown("""
+<style>
+
+/* ===========================
+   Chemistry Background
+   =========================== */
+
+.stApp {
+    background:
+        radial-gradient(circle at 15% 20%,
+        rgba(0,114,255,0.08) 0%,
+        transparent 20%),
+
+        radial-gradient(circle at 85% 30%,
+        rgba(0,198,255,0.08) 0%,
+        transparent 25%),
+
+        radial-gradient(circle at 50% 80%,
+        rgba(100,149,237,0.05) 0%,
+        transparent 30%);
+
+    background-color: #fafcff;
+}
+
+
+/* ===========================
+   Animated Gradient Title
+   =========================== */
+
+.title {
+    text-align: center;
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 0px;
+
+    background: linear-gradient(
+        90deg,
+        #00c6ff,
+        #0072ff,
+        #00c6ff
+    );
+
+    background-size: 300% auto;
+
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    animation: shine 5s linear infinite;
+}
+
+@keyframes shine {
+    to {
+        background-position: 300% center;
+    }
+}
+
+
+/* ===========================
+   Subtitle
+   =========================== */
+
+.subtitle {
+    text-align:center;
+    color:#555;
+    font-size:1.1rem;
+    margin-bottom:30px;
+}
+
+
+/* ===========================
+   Metric Cards
+   =========================== */
+
+[data-testid="stMetric"] {
+    border-radius: 15px;
+    padding: 15px;
+    background: white;
+    box-shadow: 0px 2px 10px rgba(0,0,0,0.05);
+}
+
+</style>
+
+<div class="title">
+🧪 Solvation Free Energy Predictor
+</div>
+
+
+""", unsafe_allow_html=True)
