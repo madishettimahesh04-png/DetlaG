@@ -1,4 +1,4 @@
-```python
+
 import streamlit as st
 import torch
 import joblib
@@ -327,4 +327,3 @@ with tab2:
             st.error(
                 f"Error: {str(e)}"
             )
-```
