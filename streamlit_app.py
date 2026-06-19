@@ -273,6 +273,8 @@ with tab2:
             Incorrect column selection may result in invalid predictions
             or failed calculations.
             """
+
+            )
             st.info(
                 f"Using '{solute_col}' as Solute and "
                 f"'{solvent_col}' as Solvent"
