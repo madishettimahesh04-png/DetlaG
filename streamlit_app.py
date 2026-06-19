@@ -263,7 +263,16 @@ with tab2:
                     columns,
                     index=columns.index(solvent_guess)
                 )
+            
 
+            st.warning(
+            """
+            ⚠️ Please verify that the selected columns contain valid
+            Solute and Solvent SMILES strings before running predictions.
+        
+            Incorrect column selection may result in invalid predictions
+            or failed calculations.
+            """
             st.info(
                 f"Using '{solute_col}' as Solute and "
                 f"'{solvent_col}' as Solvent"
