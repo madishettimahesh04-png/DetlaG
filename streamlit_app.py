@@ -395,8 +395,7 @@ with tab2:
 
                     solvent_guess = col
 
-            st.subheader(
-                "Column Mapping"
+        
             )
 
             col1, col2 = st.columns(2)
@@ -427,7 +426,6 @@ with tab2:
                 columns contain valid Solute and
                 Solvent SMILES strings before
                 running predictions.
-
                 Incorrect column selection may
                 result in invalid predictions or
                 failed calculations.
@@ -444,7 +442,7 @@ with tab2:
             # -------------------------
 
             if st.button(
-                "🚀 Run Batch Prediction",
+                "Prediction",
                 use_container_width=True
             ):
 
